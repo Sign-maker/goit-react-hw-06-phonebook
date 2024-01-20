@@ -1,13 +1,20 @@
-import { nanoid } from 'nanoid';
-import { Button, Form, Input, Label } from './ContactForm.styled';
-import { useState, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useState, useId } from 'react';
+import { selectContacts } from 'redux-store/contacts/contactsSelectors';
+import { addContact } from 'redux-store/contacts/contactsSlice';
+import { setFilter } from 'redux-store/filter/filterSlice';
 
-export const ContactForm = ({ onSubmit }) => {
+import { Button, Form, Input, Label } from './ContactForm.styled';
+
+export const ContactForm = () => {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
 
-  const { current: nameInputId } = useRef(nanoid());
-  const { current: telInputId } = useRef(nanoid());
+  const dispatch = useDispatch();
+  const contacts = useSelector(selectContacts);
+
+  const nameInputId = useId();
+  const telInputId = useId();
 
   const inputHandler = event => {
     const { name, value } = event.target;
@@ -24,9 +31,25 @@ export const ContactForm = ({ onSubmit }) => {
     }
   };
 
+  const isInContacts = newName => {
+    const newNameToLowerCase = newName.toLowerCase();
+
+    return contacts.some(
+      ({ name }) => name.toLowerCase() === newNameToLowerCase
+    );
+  };
+
   const onSubmitHandler = event => {
     event.preventDefault();
-    onSubmit({ name: name.trimEnd(), number: number.trimEnd() });
+    const contactData = { name: name.trimEnd(), number: number.trimEnd() };
+    const newName = contactData.name;
+
+    if (isInContacts(newName)) {
+      return alert(`${newName} is in contacts!`);
+    }
+
+    dispatch(addContact(contactData));
+    dispatch(setFilter(''));
     setName('');
     setNumber('');
   };
