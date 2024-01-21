@@ -1,8 +1,6 @@
-import { useDispatch, useSelector } from 'react-redux';
 import { useState, useId } from 'react';
-import { selectContacts } from 'redux-store/contacts/contactsSelectors';
-import { addContact } from 'redux-store/contacts/contactsSlice';
-import { setFilter } from 'redux-store/filter/filterSlice';
+import { useContacts } from 'hooks/useContacts';
+import { useFilter } from 'hooks/useFilter';
 
 import { Button, Form, Input, Label } from './ContactForm.styled';
 
@@ -10,8 +8,8 @@ export const ContactForm = () => {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
 
-  const dispatch = useDispatch();
-  const contacts = useSelector(selectContacts);
+  const { contacts, addContact } = useContacts();
+  const { setFilter } = useFilter();
 
   const nameInputId = useId();
   const telInputId = useId();
@@ -42,14 +40,13 @@ export const ContactForm = () => {
   const onSubmitHandler = event => {
     event.preventDefault();
     const contactData = { name: name.trimEnd(), number: number.trimEnd() };
-    const newName = contactData.name;
 
-    if (isInContacts(newName)) {
-      return alert(`${newName} is in contacts!`);
+    if (isInContacts(contactData.name)) {
+      return alert(`${contactData.name} is in contacts!`);
     }
 
-    dispatch(addContact(contactData));
-    dispatch(setFilter(''));
+    addContact(contactData);
+    setFilter('');
     setName('');
     setNumber('');
   };
